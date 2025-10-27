@@ -667,10 +667,27 @@ async def get_group_users():
             user_list = json.dumps(user_list,ensure_ascii=False)
             update_group_users(group["group_id"], user_list)
 
+async def setup_bot_commands():
+    """Set up bot commands that appear in the Telegram menu"""
+    try:
+        await client(functions.bots.SetBotCommandsRequest(
+            scope=types.BotCommandScopeChats(),
+            lang_code='en',
+            commands = []
+        ))
+        print("Bot commands set successfully")
+    except Exception as e:
+        print(f"Error setting bot commands: {e}")
+
 #run get_group_users every 6 minutes using APScheduler
 scheduler = AsyncIOScheduler()
 scheduler.add_job(get_group_users, 'interval', minutes=6)
 scheduler.start()
 
-client.start()
-client.run_until_disconnected()
+async def main():
+    await client.start()
+    await setup_bot_commands()
+    await client.run_until_disconnected()
+
+if __name__ == '__main__':
+    client.loop.run_until_complete(main())
